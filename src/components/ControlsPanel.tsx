@@ -27,19 +27,13 @@ const ControlsPanel: React.FC<ControlsPanelProps> = ({
   setMazeSize,
   generationAlgorithm,
   setGenerationAlgorithm,
-  solverAlgorithm,
-  setSolverAlgorithm,
   currentTheme,
   setCurrentTheme,
   gameMode,
   setGameMode,
-  animationSpeed,
-  setAnimationSpeed,
   onGenerateMaze,
-  onSolveMaze,
   onResetGame,
   isGenerating,
-  isSolving,
 }) => {
   const [isGameSettingsOpen, setIsGameSettingsOpen] = useState(false);
 
