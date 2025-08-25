@@ -52,28 +52,6 @@ const MazeCanvas: React.FC<MazeCanvasProps> = ({
     };
   };
 
-  const getCellClassName = (cell: Cell) => {
-    let className = 'maze-cell';
-    
-    if (cell.isWall) {
-      className += ' maze-wall';
-    } else if (cell.isStart) {
-      className += ' maze-start';
-    } else if (cell.isEnd) {
-      className += ' maze-end';
-    } else if (cell.isSolution) {
-      className += ' maze-solution';
-    } else if (cell.isCurrent) {
-      className += ' maze-current';
-    } else if (cell.isVisited) {
-      className += ' maze-visited';
-    } else {
-      className += ' maze-path';
-    }
-
-    return className;
-  };
-
   const handleCellClick = (cell: Cell) => {
     if (isGenerating || isSolving || cell.isWall) return;
 
@@ -274,7 +252,7 @@ const MazeCanvas: React.FC<MazeCanvasProps> = ({
             row.map((cell, colIndex) => (
               <motion.div
                 key={`${rowIndex}-${colIndex}`}
-                className={getCellClassName(cell)}
+                className="maze-cell"
                 style={getCellStyle(cell)}
                 onClick={() => handleCellClick(cell)}
                 whileHover={!cell.isWall ? { 
