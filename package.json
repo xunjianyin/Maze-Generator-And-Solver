@@ -3,10 +3,10 @@
   "version": "1.0.0",
   "description": "Interactive maze generator and solver with multiple algorithms",
   "main": "index.js",
-  "homepage": "https://yourusername.github.io/maze-generator-solver",
+  "homepage": "https://xunjianyin.github.io/Maze-Generator-And-Solver",
   "repository": {
     "type": "git",
-    "url": "https://github.com/yourusername/maze-generator-solver.git"
+    "url": "https://github.com/xunjianyin/Maze-Generator-And-Solver.git"
   },
   "scripts": {
     "dev": "vite",
