@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useMemo, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Cell, MazeTheme } from '../types/maze';
 
@@ -20,14 +20,60 @@ const MazeCanvas: React.FC<MazeCanvasProps> = ({
   const canvasRef = useRef<HTMLDivElement>(null);
   const [touchStart, setTouchStart] = useState<{ x: number; y: number } | null>(null);
   const [isDragging, setIsDragging] = useState(false);
+  const [containerWidth, setContainerWidth] = useState(600);
+
+  // Update container width on resize
+  useEffect(() => {
+    const updateContainerWidth = () => {
+      if (canvasRef.current) {
+        setContainerWidth(canvasRef.current.clientWidth);
+      }
+    };
+
+    updateContainerWidth();
+    window.addEventListener('resize', updateContainerWidth);
+    
+    // Use ResizeObserver for more precise updates
+    const resizeObserver = new ResizeObserver(updateContainerWidth);
+    if (canvasRef.current) {
+      resizeObserver.observe(canvasRef.current);
+    }
+
+    return () => {
+      window.removeEventListener('resize', updateContainerWidth);
+      resizeObserver.disconnect();
+    };
+  }, []);
+
+  // Calculate optimal cell size based on maze dimensions and container
+  const cellSize = useMemo(() => {
+    if (maze.length === 0) return 20;
+    
+    const maxCellSize = 20;
+    const minCellSize = 6; // Reduced minimum for very large mazes
+    const containerHeight = 500; // Approximate max height
+    
+    const rows = maze.length;
+    const cols = maze[0]?.length || 0;
+    
+    // Calculate size based on width and height constraints
+    const widthBasedSize = Math.floor((containerWidth - 40) / cols); // 40px for padding
+    const heightBasedSize = Math.floor((containerHeight - 40) / rows);
+    
+    // Use the smaller of the two to ensure it fits both dimensions
+    const optimalSize = Math.min(widthBasedSize, heightBasedSize);
+    
+    // Clamp between min and max sizes
+    return Math.max(minCellSize, Math.min(maxCellSize, optimalSize));
+  }, [maze, containerWidth]);
 
   const getCellStyle = (cell: Cell) => {
     const baseStyle = {
-      width: '20px',
-      height: '20px',
+      width: `${cellSize}px`,
+      height: `${cellSize}px`,
       border: '1px solid rgba(0, 0, 0, 0.1)',
       transition: 'all 0.15s ease-in-out',
-      borderRadius: '2px',
+      borderRadius: cellSize > 12 ? '2px' : cellSize > 8 ? '1px' : '0px',
     };
 
     let backgroundColor = theme.pathColor;
@@ -229,13 +275,33 @@ const MazeCanvas: React.FC<MazeCanvasProps> = ({
         </div>
       </div>
 
+      {/* Maze Size Indicator */}
+      {cellSize < 20 && (
+        <motion.div 
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-xl"
+        >
+          <div className="flex items-center text-sm text-blue-700">
+            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span>
+              Large maze detected. Cell size automatically scaled to {cellSize}px for optimal viewing.
+            </span>
+          </div>
+        </motion.div>
+      )}
+
       <div className="flex justify-center">
         <div 
           ref={canvasRef}
-          className="grid gap-0 border-2 border-gray-300 rounded-xl overflow-hidden shadow-2xl"
+          className="grid gap-0 border border-gray-300 rounded-xl overflow-hidden"
           style={{
-            gridTemplateColumns: `repeat(${maze[0]?.length || 0}, 20px)`,
-            gridTemplateRows: `repeat(${maze.length || 0}, 20px)`,
+            gridTemplateColumns: `repeat(${maze[0]?.length || 0}, ${cellSize}px)`,
+            gridTemplateRows: `repeat(${maze.length || 0}, ${cellSize}px)`,
+            maxWidth: '100%',
+            maxHeight: '500px',
           }}
           onTouchStart={handleTouchStart}
           onTouchMove={handleTouchMove}
@@ -256,11 +322,11 @@ const MazeCanvas: React.FC<MazeCanvasProps> = ({
                 style={getCellStyle(cell)}
                 onClick={() => handleCellClick(cell)}
                 whileHover={!cell.isWall ? { 
-                  scale: 1.2, 
+                  scale: 1.1, 
                   zIndex: 10,
-                  boxShadow: '0 0 20px rgba(59, 130, 246, 0.5)'
+                  boxShadow: '0 0 0 2px rgba(59, 130, 246, 0.3)'
                 } : {}}
-                whileTap={!cell.isWall ? { scale: 0.9 } : {}}
+                whileTap={!cell.isWall ? { scale: 0.95 } : {}}
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ 
@@ -281,21 +347,21 @@ const MazeCanvas: React.FC<MazeCanvasProps> = ({
         <div className="space-y-2">
           <div className="flex items-center">
             <div 
-              className="w-4 h-4 mr-3 rounded shadow-sm"
+              className="w-4 h-4 mr-3 rounded"
               style={{ backgroundColor: theme.startColor }}
             ></div>
             <span className="font-medium">Start</span>
           </div>
           <div className="flex items-center">
             <div 
-              className="w-4 h-4 mr-3 rounded shadow-sm"
+              className="w-4 h-4 mr-3 rounded"
               style={{ backgroundColor: theme.endColor }}
             ></div>
             <span className="font-medium">End</span>
           </div>
           <div className="flex items-center">
             <div 
-              className="w-4 h-4 mr-3 rounded shadow-sm"
+              className="w-4 h-4 mr-3 rounded"
               style={{ backgroundColor: theme.currentColor }}
             ></div>
             <span className="font-medium">Player</span>
@@ -304,21 +370,21 @@ const MazeCanvas: React.FC<MazeCanvasProps> = ({
         <div className="space-y-2">
           <div className="flex items-center">
             <div 
-              className="w-4 h-4 mr-3 rounded shadow-sm"
+              className="w-4 h-4 mr-3 rounded"
               style={{ backgroundColor: theme.visitedColor }}
             ></div>
             <span className="font-medium">Visited</span>
           </div>
           <div className="flex items-center">
             <div 
-              className="w-4 h-4 mr-3 rounded shadow-sm"
+              className="w-4 h-4 mr-3 rounded"
               style={{ backgroundColor: theme.solutionColor }}
             ></div>
             <span className="font-medium">Solution</span>
           </div>
           <div className="flex items-center">
             <div 
-              className="w-4 h-4 mr-3 rounded shadow-sm"
+              className="w-4 h-4 mr-3 rounded"
               style={{ backgroundColor: theme.wallColor }}
             ></div>
             <span className="font-medium">Wall</span>

@@ -214,14 +214,7 @@ function App() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 relative overflow-hidden">
-      {/* Background decorative elements */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-blue-400/20 to-purple-400/20 rounded-full blur-3xl animate-float"></div>
-        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-gradient-to-br from-green-400/20 to-blue-400/20 rounded-full blur-3xl animate-float" style={{ animationDelay: '1s' }}></div>
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-gradient-to-br from-purple-400/10 to-pink-400/10 rounded-full blur-3xl animate-float" style={{ animationDelay: '2s' }}></div>
-      </div>
-
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 relative">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -244,7 +237,7 @@ function App() {
 
         {/* Main Content Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 max-w-7xl mx-auto">
-          {/* Controls Panel */}
+          {/* Controls Panel (Generation Only) */}
           <motion.div 
             initial={{ opacity: 0, x: -50 }}
             animate={{ opacity: 1, x: 0 }}
@@ -288,13 +281,93 @@ function App() {
             />
           </motion.div>
 
-          {/* Game Stats */}
+          {/* Right Side Panel (Solver Settings + Game Stats) */}
           <motion.div 
             initial={{ opacity: 0, x: 50 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.6 }}
-            className="lg:col-span-1"
+            className="lg:col-span-1 space-y-6"
           >
+            {/* Solver Settings */}
+            <motion.div
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.7 }}
+              className="card p-6"
+            >
+              <div className="flex items-center mb-4">
+                <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-green-600 rounded-xl flex items-center justify-center mr-3">
+                  <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </div>
+                <h3 className="text-xl font-bold text-gray-800">Solver Settings</h3>
+              </div>
+              
+              {/* Solver Algorithm */}
+              <div className="mb-6">
+                <label className="block text-sm font-semibold text-gray-700 mb-3">
+                  Solver Algorithm
+                </label>
+                <select
+                  value={solverAlgorithm}
+                  onChange={(e) => setSolverAlgorithm(e.target.value as SolverAlgorithm)}
+                  className="select-field touch-target"
+                  disabled={isSolving}
+                >
+                  <option value="bfs">Breadth-First Search</option>
+                  <option value="dfs">Depth-First Search</option>
+                  <option value="astar">A* Search</option>
+                </select>
+                <p className="text-xs text-gray-500 mt-2 italic">
+                  {solverAlgorithm === 'bfs' && 'Finds shortest path'}
+                  {solverAlgorithm === 'dfs' && 'Explores deep paths first'}
+                  {solverAlgorithm === 'astar' && 'Heuristic-based optimal pathfinding'}
+                </p>
+              </div>
+
+              {/* Animation Speed */}
+              <div className="mb-6">
+                <label className="block text-sm font-semibold text-gray-700 mb-3">
+                  Animation Speed: {animationSpeed}ms
+                </label>
+                <input
+                  type="range"
+                  min="10"
+                  max="200"
+                  value={animationSpeed}
+                  onChange={(e) => setAnimationSpeed(Number(e.target.value))}
+                  className="slider touch-target"
+                  disabled={isSolving}
+                />
+                <div className="flex justify-between text-xs text-gray-500 mt-1">
+                  <span>Fast</span>
+                  <span>Slow</span>
+                </div>
+              </div>
+
+              {/* Solve Button */}
+              <motion.button
+                onClick={solveMaze}
+                disabled={isSolving}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                className="w-full btn-success touch-target"
+              >
+                {isSolving ? (
+                  <div className="flex items-center justify-center">
+                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-3"></div>
+                    Solving...
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-center">
+                    Auto-Solve Maze
+                  </div>
+                )}
+              </motion.button>
+            </motion.div>
+
+            {/* Game Stats */}
             <GameStats
               stats={gameStats}
               gameMode={gameMode}
